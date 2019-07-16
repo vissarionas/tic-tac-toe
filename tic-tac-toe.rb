@@ -108,6 +108,12 @@ def render_board(board)
   render_row(7, 9, board)
 end
 
+reset_game = proc do
+  board = {}
+  available_positions = (1..9).to_a
+  current_player = USER_MARK
+end
+
 loop do
   loop do
     render_board(board)
@@ -118,8 +124,6 @@ loop do
     current_player = switch_player(current_player)
   end
   present_winner(winner)
-  board = {} if winner
-  available_positions = (1..9).to_a if winner
-  current_player = USER_MARK if winner
+  reset_game.call if winner
   break unless play_again?
 end
