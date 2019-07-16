@@ -22,19 +22,14 @@ def win_detected?(board, combinations)
   !winner.nil?
 end
 
-def possible_win?(player, board, combinations)
-  position = nil
+def possible_win(player, board, combinations)
+  possible_win_position = nil
   combinations.each do |combination|
-    testable = []
-    combination.each { |num| testable << board[num] if board.key? num }
-    possible_win_detected =
-      testable.length == 2 &&
-      testable.uniq.length == 1 &&
-      testable[0] == player
-    position = combination.dup if possible_win_detected
+    under_test = board.select { |key, value| value if combination.include? key }
+    possible_win = under_test.values.count(player) == 2
+    possible_win_position = combination.drop_while { |key| under_test.keys.include? key } if possible_win
   end
-  position&.reject! { |num| board.key? num }
-  position[0] if position
+  possible_win_position[0] if possible_win_position
 end
 
 def render_row(row_start, row_end, board)
@@ -61,8 +56,8 @@ def user_selection(positions)
 end
 
 def computer_selection(board, positions, combinations)
-  pc_winning_move = possible_win?('X', board, combinations)
-  user_winning_prevent = possible_win?('O', board, combinations) unless pc_winning_move
+  pc_winning_move = possible_win('X', board, combinations)
+  user_winning_prevent = possible_win('O', board, combinations) unless pc_winning_move
   pc_winning_move || user_winning_prevent || positions.sample
 end
 
