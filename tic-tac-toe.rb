@@ -18,7 +18,7 @@ def play_again?
 end
 
 def present_winner(winner)
-  puts winner
+  puts "#{winner} WON!!"
 end
 
 def detect_winner(board, combinations)
@@ -26,7 +26,7 @@ def detect_winner(board, combinations)
   combinations.each do |combination|
     under_test = board.select { |key, value| value if combination.include? key }.values
     win_detected = under_test.length == 3 && under_test.uniq.size == 1
-    winner = under_test[0] == USER_MARK ? USER_MARK : COMPUTER_MARK if win_detected
+    winner = under_test[0] == USER_MARK ? 'USER' : 'COMPUTER' if win_detected
   end
   winner
 end
@@ -118,5 +118,8 @@ loop do
     current_player = switch_player(current_player)
   end
   present_winner(winner)
+  board = {} if winner
+  available_positions = (1..9).to_a if winner
+  current_player = USER_MARK if winner
   break unless play_again?
 end
