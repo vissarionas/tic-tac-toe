@@ -1,8 +1,9 @@
-COMPUTER_MARK = 'X'
-USER_MARK = 'O'
+COMPUTER_MARK = 'X'.freeze
+USER_MARK = 'O'.freeze
+ROW_WIDTH = 37
 selections_state = {}
 available_positions = (1..9).to_a
-current_player = 'O'
+current_player = USER_MARK
 win_combinations = [
   [1, 2, 3], [4, 5, 6], [7, 8, 9],
   [1, 4, 7], [2, 5, 8], [3, 6, 9],
@@ -61,22 +62,33 @@ def computer_selection(state, positions, combinations)
   pc_winning_move || user_winning_prevent || positions.sample
 end
 
-def update_state_and_positions(state, combinations, positions, mark)
-  position =
-    if mark == USER_MARK
-      user_selection(positions)
-    else
-      computer_selection(state, positions, combinations)
-    end
-  state[positions.delete position.to_i] = mark
+def reduce_available_positions(available_positions, position)
+  available_positions.delete position.to_i
 end
 
-def play(state, combinations, positions, player)
-  sleep 1 if player == COMPUTER_MARK
-  update_state_and_positions(state, combinations, positions, player)
+def update_state(state, position, current_player)
+  state[position.to_i] = current_player
+end
+
+def next_move(state, current_player, combinations, available_positions)
+  if current_player == USER_MARK
+    user_selection(available_positions)
+  else
+    computer_selection(state, available_positions, combinations)
+  end
+end
+
+def switch_player(current_player)
+  current_player == USER_MARK ? COMPUTER_MARK : USER_MARK
+end
+
+def play(state, combinations, available_positions, current_player)
+  sleep 1 if current_player == COMPUTER_MARK
+  next_move = next_move(state, current_player, combinations, available_positions)
+  update_state(state, next_move, current_player)
+  reduce_available_positions(available_positions, next_move)
   render_board(state)
 end
-
 
 def render_board(state)
   system 'clear'
@@ -93,5 +105,5 @@ loop do
   play(selections_state, win_combinations, available_positions, current_player)
   break if win_detected?(selections_state, win_combinations)
 
-  current_player = current_player == 'O' ? 'X' : 'O'
+  current_player = switch_player(current_player)
 end
