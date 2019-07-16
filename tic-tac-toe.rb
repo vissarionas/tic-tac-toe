@@ -1,6 +1,7 @@
 COMPUTER_MARK = 'X'.freeze
 USER_MARK = 'O'.freeze
 ROW_WIDTH = 37
+winner = nil
 board = {}
 available_positions = (1..9).to_a
 current_player = USER_MARK
@@ -10,16 +11,24 @@ win_combinations = [
   [1, 5, 9], [3, 5, 7]
 ]
 
-def win_detected?(board, combinations)
+def play_again?
+  puts 'Play again? (Y/N)'
+  user_input = gets.chomp.upcase
+  user_input == 'Y'
+end
+
+def present_winner(winner)
+  puts winner
+end
+
+def detect_winner(board, combinations)
   winner = nil
   combinations.each do |combination|
-    testable = []
-    combination.each { |num| testable << board[num] if board.key? num }
-    win_detected = testable.length == 3 && testable.uniq.length == 1
-    winner = testable[0] == 'O' ? 'USER' : 'COMPUTER' if win_detected
+    under_test = board.select { |key, value| value if combination.include? key }.values
+    win_detected = under_test.length == 3 && under_test.uniq.size == 1
+    winner = under_test[0] == USER_MARK ? USER_MARK : COMPUTER_MARK if win_detected
   end
-  puts "#{winner} WON !!" if winner
-  !winner.nil?
+  winner
 end
 
 def possible_win(player, board, combinations)
@@ -27,7 +36,7 @@ def possible_win(player, board, combinations)
   combinations.each do |combination|
     under_test = board.select { |key, value| value if combination.include? key }
     possible_win = under_test.values.count(player) == 2
-    possible_win_position = combination.drop_while { |key| under_test.keys.include? key } if possible_win
+    possible_win_position = combination.reject { |key| under_test.keys.include? key } if possible_win
   end
   possible_win_position[0] if possible_win_position
 end
@@ -100,9 +109,14 @@ def render_board(board)
 end
 
 loop do
-  render_board(board)
-  play(board, win_combinations, available_positions, current_player)
-  break if win_detected?(board, win_combinations)
+  loop do
+    render_board(board)
+    play(board, win_combinations, available_positions, current_player)
+    winner = detect_winner(board, win_combinations)
+    break if winner
 
-  current_player = switch_player(current_player)
+    current_player = switch_player(current_player)
+  end
+  present_winner(winner)
+  break unless play_again?
 end
